@@ -321,6 +321,11 @@ func Route(jobs []*model.Job, worker model.Worker, now time.Time) (RoutingResult
 	if err := worker.Validate(); err != nil {
 		return RoutingResult{}, err
 	}
+	for _, job := range jobs {
+		if job == nil {
+			return RoutingResult{}, errors.New("nil job in route")
+		}
+	}
 	result := RoutingResult{WorkerID: worker.ID, Rejected: make(map[string]string)}
 	remaining := worker.Capacity
 	ordered := append([]*model.Job(nil), jobs...)
