@@ -321,6 +321,13 @@ func Route(jobs []*model.Job, worker model.Worker, now time.Time) (RoutingResult
 	if err := worker.Validate(); err != nil {
 		return RoutingResult{}, err
 	}
+	// Validate the input list before any dereferencing (sorting, field access)
+	// so a nil job at any position produces a stable error instead of a panic.
+	for _, job := range jobs {
+		if job == nil {
+			return RoutingResult{}, errors.New("nil job in routing list")
+		}
+	}
 	result := RoutingResult{WorkerID: worker.ID, Rejected: make(map[string]string)}
 	remaining := worker.Capacity
 	ordered := append([]*model.Job(nil), jobs...)
